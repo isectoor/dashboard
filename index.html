@@ -436,7 +436,7 @@ function setupMenu() {
 (function (root, DATA) {
   const $ = s => root.querySelector(s);
 
-  $('#period').textContent = DATA.period + ' · ' + DATA.cabang + ' · ' + DATA.workdays + ' bulan · ' + DATA.areas.length + ' area';
+  $('#period').textContent = DATA.period + ' · ' + DATA.workdays + ' bulan · ' + DATA.areas.length + ' area';
 
   const D = DATA.days;
   const aman = D.reduce((s, d) => s + d.aman, 0);
@@ -492,7 +492,7 @@ function setupMenu() {
 (function (root, DATA) {
   const $ = s => root.querySelector(s);
 
-  $('#period').textContent = DATA.period + ' · ' + DATA.cabang;
+  $('#period').textContent = DATA.period;
   $('#nPoin').textContent = DATA.totalPoin;
 
   const days = DATA.days; // [{d, wd, weekend}]
