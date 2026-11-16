@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard Checklist Operasional</title>
+<style>
+/* Stigo legacy palette (from stigo-apps layout + dashboard view):
+   header #212121→#313131 · ground #f4f5f5 · primary #CFA754 · choco-gold #483C0B · lighter-gold #FFD57D · primary-dark #212121 */
+*{box-sizing:border-box}
+:root{--primary:#CFA754;--primary-2:#B9913D;--choco:#483C0B;--lighter:#FFD57D;--ground:#f4f5f5;--text:#212121;--muted:#6b7280;--border:#e5e7eb;--ok:#10b981;--warn:#f59e0b;--bad:#f43f5e}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--ground);color:var(--text);font-size:14px}
+
+/* header */
+.topbar{position:sticky;top:0;z-index:20;height:64px;background:linear-gradient(90deg,#212121,#313131);color:#fff;display:flex;align-items:center;gap:14px;padding:0 22px;box-shadow:0 4px 10px rgba(0,0,0,.15);border-bottom:1px solid rgba(0,0,0,.4)}
+.brand{font-weight:800;letter-spacing:1.5px;color:var(--primary);font-size:18px}
+.ttl{position:absolute;left:50%;transform:translateX(-50%);font-weight:700;font-size:15px;white-space:nowrap;color:#fff}
+.tag{margin-left:auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;background:#fef3c7;color:#78350f;border:1px solid #fcd34d;white-space:nowrap}
+.menu-btn{display:none;background:none;border:1px solid #525252;color:#fff;border-radius:8px;padding:4px 10px;cursor:pointer}
+
+/* sidebar (white, as in legacy app) */
+.layout{display:flex;min-height:calc(100vh - 64px)}
+.sidebar{width:240px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);padding:14px 8px;position:sticky;top:64px;height:calc(100vh - 64px);overflow:auto}
+.sidebar .search{margin:0 4px 14px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--muted)}
+.sidebar .grp{font-size:14px;font-weight:600;color:var(--text);padding:9px 12px;display:flex;align-items:center;gap:8px}
+.sidebar a{display:block;padding:9px 14px 9px 30px;color:#374151;text-decoration:none;font-size:13px;border-radius:8px;margin:2px 0}
+.sidebar a:hover{background:#f9fafb}
+.sidebar a.active{background:#fdf6e3;color:var(--text);font-weight:600;border:1px solid #f2daa3}
+
+main{flex:1;min-width:0;padding:20px 24px 40px}
+.pagehead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 18px;box-shadow:0 1px 2px rgba(0,0,0,.04);margin-bottom:16px}
+h1{font-size:20px;margin:0;color:var(--text);font-weight:700}
+.lead{color:var(--muted);font-size:12px;margin:4px 0 0}
+.dummy{background:#fef9e7;color:#78350f;border:1px solid #f2daa3;padding:8px 12px;border-radius:10px;font-size:12px;margin-bottom:16px}
+.section-title{font-size:13px;font-weight:700;margin:26px 0 10px;color:var(--text);text-transform:uppercase;letter-spacing:.6px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.two{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.two-eq{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+/* KPI = gold frame, white body (legacy "Tripsheet Hari Ini" cards) */
+.kpi-frame{border:2px solid var(--primary);background:var(--primary);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.kpi-head{padding:6px 16px;font-size:11px;font-weight:700;color:#fff;letter-spacing:1.2px;text-transform:uppercase}
+.kpi-body{background:#fff;border-radius:10px 10px 0 0;padding:18px 18px 16px;flex:1;display:flex;flex-direction:column;justify-content:space-between;min-height:118px;gap:10px}
+.kpi-sub{font-size:13px;font-weight:600;color:#374151}
+.kpi-v{text-align:right;font-size:40px;font-weight:800;color:var(--text);letter-spacing:-.5px;line-height:1.05}
+.kpi-v small{font-size:20px;font-weight:700;color:#6b7280}
+.kpi-note{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* panels = choco-gold frame, gold-tinted header text, white body */
+.card{background:#fff;border:2px solid var(--choco);border-radius:12px;padding:0 16px 16px;min-width:0;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.card h3{margin:0 -16px 14px;padding:12px 16px;background:var(--choco);color:var(--lighter);font-size:14px;font-weight:600}
+.card:not(:has(h3)){padding:18px}
+.card>.note:last-child{margin-top:12px}
+.card .table-wrap{margin:0 -2px}
+.card:not(:has(h3)) .table-wrap{margin:0}
+.svgwrap{padding:4px 2px 0}
+.legend{padding-bottom:2px}
+main>section,main>h2{scroll-margin-top:84px}
+.section-title{margin-bottom:12px}
+.grid.two,.grid.two-eq{gap:18px}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-ok{background:#d1fae5;color:#065f46}.b-warn{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}.b-bad{background:#ffe4e6;color:#9f1239}.b-na{background:#f3f4f6;color:#4b5563}.b-gold{background:#fdf6e3;color:var(--choco)}
+
+/* progress bars like legacy "Progress Bar" column */
+.bar-row{display:grid;grid-template-columns:minmax(90px,200px) 1fr 56px;gap:12px;align-items:center;font-size:12px;margin:9px 0;color:#374151}
+.bar-row .n{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)}
+.bar{height:12px;background:#e5e7eb;border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
+.bar>span{display:block;height:100%;background:linear-gradient(90deg,#CFA754,#B9913D);border-radius:999px}
+.bar.bad>span{background:var(--bad)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.donut{width:160px;height:160px;border-radius:50%;position:relative;flex-shrink:0}
+.donut::after{content:attr(data-center);position:absolute;inset:30px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;color:var(--text)}
+
+/* tables like legacy: uppercase grey header, light row lines, amber hover */
+.table-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
+input.search,select.sel{padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:var(--text);font:inherit;font-size:13px}
+input.search{width:100%;max-width:300px}
+.table-wrap{overflow:auto;max-height:460px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:12px 10px;border-bottom:1px solid #f3f4f6;text-align:left;white-space:nowrap}
+th{background:#fff;color:#9ca3af;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.4px;position:sticky;top:0;z-index:1}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:hover td{background:rgba(255,251,235,.6)}
+td b{color:var(--text)}
+.svgwrap{width:100%;overflow-x:auto}
+.heat-wrap{overflow:auto;border:1px solid var(--border);border-radius:10px}
+.heat{border-collapse:separate;border-spacing:2px;font-size:10px;margin:8px}
+.heat th{background:none;position:static;font-weight:600;color:var(--muted);padding:2px 4px;font-size:10px;border:none;text-transform:none}
+.heat td{padding:0;border:none;background:none}
+.hc{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff}
+.hc.v{background:var(--ok)}.hc.x{background:var(--bad)}.hc.d{background:#e5e7eb;color:#6b7280}
+.hname{text-align:left!important;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;color:var(--text)!important;padding-right:12px!important;font-size:11px}
+.sticky-l{position:sticky;left:0;background:#fff;z-index:1}
+.note{font-size:12px;color:var(--muted);margin-top:10px}
+.stage-h td{background:#fdf6e3;font-weight:700;color:var(--choco)}
+
+@media (max-width:900px){
+  .two,.two-eq{grid-template-columns:1fr}
+  .menu-btn{display:block}
+  .sidebar{position:fixed;left:0;top:64px;bottom:0;z-index:15;transform:translateX(-100%);transition:transform .25s ease;height:auto;box-shadow:4px 0 12px rgba(0,0,0,.08)}
+  .menu-open .sidebar{transform:none}
+  .ttl{position:static;transform:none}
+  .tag{display:none}
+  main{padding:16px}
+}
+@media (max-width:520px){
+  body{font-size:13px}
+  .kpi-v{font-size:30px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpis>.kpi-frame:first-child{grid-column:1/-1}
+  .bar-row{grid-template-columns:110px 1fr 44px}
+}
+
+.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:900px){.grid.three{grid-template-columns:1fr}}
+.cat-card h3{margin-bottom:6px}
+.cat-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #f3f4f6;font-size:13px;color:#374151}
+.cat-row b{color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cat-total{margin-top:16px;padding-top:12px;border-top:2px solid var(--choco);text-align:right}
+.cat-total small{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+.cat-pct{font-size:40px;font-weight:800;color:var(--choco);line-height:1.1}
+.cat-row span{min-width:0;overflow-wrap:anywhere;white-space:normal}
+.cat-row{align-items:flex-start}
+.cat-card .note{white-space:normal}
+
+.view{display:none}
+.view.active{display:block}
+.sidebar .subnav{display:none;margin-top:4px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.sidebar .subnav.active{display:block}
+.sidebar .subnav a{font-size:12px;padding:6px 14px 6px 30px}
+.sidebar .sw{font-weight:600;color:var(--text);padding:9px 14px;border-radius:8px;margin:2px 0;cursor:pointer;display:block;text-decoration:none;border:1px solid transparent}
+.sidebar .sw.active{background:#fdf6e3;border-color:#f2daa3}
+.sidebar .sw small{display:block;font-weight:400;color:var(--muted);font-size:11px;margin-top:2px}
+.sidebar .sec-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;padding:14px 14px 6px}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+  <div class="brand">STIGO</div>
+  <div class="ttl">Checklist Rutin Operasional</div>
+  <div class="tag">Oktober 2026</div>
+</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sec-label">Checklist</div>
+    <a class="sw active" role="button" tabindex="0" data-view="kendaraan">Kendaraan Operasional<small>Checklist rutin kendaraan</small></a>
+    <div class="subnav active" data-sub="kendaraan"></div>
+    <a class="sw" role="button" tabindex="0" data-view="building">Building Security<small>Checklist rutin gedung</small></a>
+    <div class="subnav" data-sub="building"></div>
+    <a class="sw" role="button" tabindex="0" data-view="pjpur">Ceklis Risiko PJPUR<small>Ceklis bulanan risiko</small></a>
+    <div class="subnav" data-sub="pjpur"></div>
+  </aside>
+  <main>
+<div class="view active" data-view="kendaraan" id="view-kendaraan">
+    <h1>Dashboard Checklist Rutin Kendaraan</h1>
+    <p class="lead" id="period"></p>
+
+    <section id="kpi">
+      <div class="grid kpis" id="kpis"></div>
+    </section>
+
+    <h2 class="section-title" id="tren">Tren Harian Status Pengecekan</h2>
+    <div class="card">
+      <div class="svgwrap" id="trend"></div>
+      <div class="legend">
+        <span><i style="background:#16a34a"></i>Layak</span>
+        <span><i style="background:#f59e0b"></i>Layak - Catat</span>
+        <span><i style="background:#dc2626"></i>Tidak Layak</span>
+      </div>
+    </div>
+
+    <div id="komposisi" class="grid two" style="margin-top:14px">
+      <div class="card"><h3>Komposisi Status (Seluruh Pengecekan)</h3><div id="donut"></div></div>
+      <div class="card"><h3>Temuan per Kategori</h3><div id="cats"></div></div>
+    </div>
+
+    <h2 class="section-title" id="item">Item Temuan Terbanyak</h2>
+    <div class="card"><div id="topItems"></div><p class="note">Temuan = status Perhatian + Rusak, dihitung dari seluruh checklist periode berjalan.</p></div>
+
+    <h2 class="section-title" id="unit">Rekap per Kendaraan</h2>
+    <div class="card">
+      <div class="table-tools">
+        <input class="search" id="q" type="search" placeholder="Cari plat atau pengemudi…">
+        <select class="sel" id="fStatus">
+          <option value="">Semua validasi</option>
+          <option value="OK">OK</option>
+          <option value="!OK">Perlu dicek</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>No</th><th>Kendaraan</th><th>Nomor Polisi</th><th>Pengemudi</th>
+            <th class="num">Jml Cek</th><th class="num">Layak</th><th class="num">Layak-Catat</th><th class="num">Tidak Layak</th>
+            <th class="num">% Layak</th><th class="num">Odometer (km)</th><th>Validasi Odometer</th>
+          </tr></thead>
+          <tbody id="vt"></tbody>
+        </table>
+      </div>
+      <p class="note" id="vcount"></p>
+    </div>
+  </div>
+<div class="view" data-view="building" id="view-building">
+    <h1>Dashboard Checklist Rutin Building Security</h1>
+    <p class="lead" id="period"></p>
+
+    <section id="kpi"><div class="grid kpis" id="kpis"></div></section>
+
+    <h2 class="section-title" id="tren">Tren Bulanan Status Keamanan</h2>
+    <div class="card">
+      <div class="svgwrap" id="trend"></div>
+      <div class="legend">
+        <span><i style="background:#16a34a"></i>Aman</span>
+        <span><i style="background:#f59e0b"></i>Aman - Catat</span>
+        <span><i style="background:#dc2626"></i>Tidak Aman</span>
+      </div>
+    </div>
+
+    <div id="kategori" class="grid two" style="margin-top:14px">
+      <div class="card"><h3>Komposisi Status Pengecekan Bulanan</h3><div id="donut"></div></div>
+      <div class="card"><h3>Temuan per Kategori</h3><div id="cats"></div></div>
+    </div>
+
+    <h2 class="section-title">Item Temuan Terbanyak</h2>
+    <div class="card"><div id="topItems"></div><p class="note">Temuan = status Perhatian + Rusak. Status "Tidak Ada" (unit belum terpasang) tidak dihitung sebagai temuan.</p></div>
+
+    <h2 class="section-title" id="area">Rekap per Area / Ruang</h2>
+    <div class="card">
+      <div class="table-tools">
+        <input class="search" id="q" type="search" placeholder="Cari area atau kode…">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>No</th><th>Area / Ruang</th><th>Kode</th><th class="num">Jml Item</th>
+            <th class="num">OK</th><th class="num">Perhatian</th><th class="num">Rusak</th><th class="num">Tidak Ada</th>
+            <th class="num">Total Temuan</th><th>Status Terakhir</th>
+          </tr></thead>
+          <tbody id="at"></tbody>
+        </table>
+      </div>
+      <p class="note" id="acount"></p>
+    </div>
+
+    <h2 class="section-title" id="petugas">Rekap per Petugas</h2>
+    <div class="card">
+      <div class="table-wrap" style="max-height:none">
+        <table>
+          <thead><tr><th>Petugas</th><th class="num">Pengecekan</th><th class="num">Aman</th><th class="num">Aman - Catat</th><th class="num">Tidak Aman</th><th class="num">% Aman</th></tr></thead>
+          <tbody id="pt"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<div class="view" data-view="pjpur" id="view-pjpur">
+    <h1>Dashboard Checksheet Risiko SOP 03 (PJPUR)</h1>
+    <p class="lead" id="period"></p>
+
+    <section><div class="grid kpis" id="kpis"></div></section>
+
+    <h2 class="section-title">Kepatuhan per Kategori</h2>
+    <div class="grid three">
+      <div id="catCards" style="display:contents"></div>
+      <div class="card"><h3>Status Kontrol Periode</h3><div id="donut"></div></div>
+    </div>
+
+    <h2 class="section-title">Kontrol Harian per Hari Kerja</h2>
+    <div class="card">
+      <div class="svgwrap" id="trend"></div>
+      <p class="note">Senin–Jumat aktif. Setiap hari kerja memuat <span id="nPoin"></span> titik kontrol dari 2 kategori. Sabtu &amp; Minggu tidak diperiksa (tanda "-").</p>
+    </div>
+
+    <h2 class="section-title">Heatmap Kontrol Harian</h2>
+    <div class="card">
+      <div class="legend" style="margin:0 0 10px">
+        <span><i style="background:#22c55e"></i>Aman (√)</span>
+        <span><i style="background:#f43f5e"></i>Temuan (X)</span>
+        <span><i style="background:#e5e7eb"></i>Libur / akhir pekan (-)</span>
+      </div>
+      <div class="heat-wrap"><table class="heat" id="heatTbl"></table></div>
+    </div>
+
+    <h2 class="section-title">Log Temuan Risiko &amp; Tindakan Eskalasi</h2>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>No</th><th>Tanggal</th><th>Kode SOP</th><th>Kategori</th><th>Deskripsi Temuan</th><th>Tindakan Korektif</th><th>No. Berita Acara</th><th>Status</th></tr></thead>
+          <tbody id="logBody"></tbody>
+        </table>
+      </div>
+      <p class="note" id="logNote"></p>
+    </div>
+  </div>
+  </main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const fmt = n => Number(n).toLocaleString('id-ID');
+const pct = (a, b) => (b ? (a / b * 100) : 0).toFixed(1);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function barList(el, rows, bad) {
+  const max = Math.max(1, ...rows.map(r => r.value));
+  el.innerHTML = rows.map(r =>
+    `<div class="bar-row"><div title="${esc(r.label)}">${esc(r.label)}</div>` +
+    `<div class="bar${bad ? ' bad' : ''}"><span style="width:${(r.value / max * 100).toFixed(1)}%"></span></div>` +
+    `<div class="n">${fmt(r.value)}</div></div>`
+  ).join('') || '<div class="note">Tidak ada data.</div>';
+}
+
+function stackedBars(el, rows, keys, colors, names) {
+  const slot = 30, H = 180, padL = 30, padB = 22;
+  const W = Math.max(520, rows.length * slot + padL + 10);
+  const max = Math.max(1, ...rows.map(r => keys.reduce((s, k) => s + r[k], 0)));
+  const bw = slot * 0.62;
+  let s = `<svg viewBox="0 -16 ${W} ${H + padB + 22}" width="100%" role="img" aria-label="Grafik batang harian">`;
+  for (let g = 0; g <= 4; g++) {
+    const y = H - (H * g / 4);
+    s += `<line x1="${padL}" x2="${W}" y1="${y}" y2="${y}" stroke="#e5e7eb" stroke-dasharray="3 3"/>`;
+    s += `<text x="${padL - 6}" y="${y + 3}" font-size="9" text-anchor="end" fill="#6b7280">${Math.round(max * g / 4)}</text>`;
+  }
+  rows.forEach((r, i) => {
+    const x = padL + i * slot + (slot - bw) / 2;
+    let y = H;
+    keys.forEach((k, j) => {
+      const h = r[k] / max * H;
+      y -= h;
+      if (h > 0) s += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="${colors[j]}" rx="2"><title>${esc(r.label)} · ${names[j]}: ${r[k]}</title></rect>`;
+    });
+    s += `<text x="${(x + bw / 2).toFixed(1)}" y="${H + 15}" font-size="9" text-anchor="middle" fill="#6b7280">${esc(r.label)}</text>`;
+  });
+  s += '</svg>';
+  el.innerHTML = s;
+}
+
+function donut(el, parts, center) {
+  const total = parts.reduce((s, p) => s + p.value, 0) || 1;
+  let acc = 0;
+  const stops = parts.map(p => {
+    const from = acc / total * 100; acc += p.value; const to = acc / total * 100;
+    return `${p.color} ${from.toFixed(2)}% ${to.toFixed(2)}%`;
+  }).join(', ');
+  el.innerHTML =
+    `<div class="donut-wrap"><div class="donut" data-center="${esc(center)}" style="background:conic-gradient(${stops})"></div>` +
+    `<div class="legend" style="flex-direction:column;gap:8px;margin:0">` +
+    parts.map(p => `<span><i style="background:${p.color}"></i>${esc(p.label)}: <b style="color:var(--text)">${fmt(p.value)}</b> (${pct(p.value, total)}%)</span>`).join('') +
+    `</div></div>`;
+}
+
+function badgeFor(status) {
+  const s = String(status).toLowerCase();
+  if (s.startsWith('tidak') || s === 'rusak') return `<span class="badge b-bad">${esc(status)}</span>`;
+  if (s.includes('catat') || s === 'perhatian') return `<span class="badge b-warn">${esc(status)}</span>`;
+  if (s === 'n/a' || s.includes('tidak ada')) return `<span class="badge b-na">${esc(status)}</span>`;
+  return `<span class="badge b-ok">${esc(status)}</span>`;
+}
+
+function setupMenu() {
+  const btn = document.getElementById('menuBtn');
+  if (btn) btn.addEventListener('click', () => document.body.classList.toggle('menu-open'));
+  document.querySelectorAll('.sidebar a').forEach(a => a.addEventListener('click', () => document.body.classList.remove('menu-open')));
+  const links = [...document.querySelectorAll('.sidebar a[href^="#"]')];
+  const map = links.map(a => [a, document.querySelector(a.getAttribute('href'))]).filter(x => x[1]);
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) map.forEach(([a, el]) => a.classList.toggle('active', el === e.target));
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  map.forEach(([, el]) => obs.observe(el));
+}
+
+</script>
+<script>
+// kendaraan
+(function (root, DATA) {
+  const $ = s => root.querySelector(s);
+
+  $('#period').textContent = DATA.period + ' · ' + DATA.workdays + ' hari kerja · ' + DATA.vehicles.length + ' kendaraan';
+
+  const V = DATA.vehicles;
+  const tot = V.reduce((a, v) => { a.cek += v.cek; a.layak += v.layak; a.catat += v.catat; a.tidak += v.tidak; return a; }, { cek: 0, layak: 0, catat: 0, tidak: 0 });
+  const odoBad = V.filter(v => v.odoStatus !== 'OK').length;
+
+  $('#kpis').innerHTML = [
+    { label: 'Total Pengecekan', value: fmt(tot.cek), sub: DATA.workdays + ' hari × ' + V.length + ' kendaraan', cls: 'hero' },
+    { label: '% Layak Jalan', value: pct(tot.layak, tot.cek) + '%', sub: fmt(tot.layak) + ' pengecekan layak' },
+    { label: 'Layak - Catat', value: fmt(tot.catat), sub: pct(tot.catat, tot.cek) + '% perlu dicatat' },
+    { label: 'Tidak Layak', value: fmt(tot.tidak), sub: pct(tot.tidak, tot.cek) + '% perlu tindak lanjut' },
+    { label: 'Validasi Odometer', value: odoBad + ' unit', sub: 'perlu dicek data GPS' }
+  ].map(k => `<div class="kpi-frame"><div class="kpi-head">${k.label}</div><div class="kpi-body"><span class="kpi-sub">${k.sub}</span><span class="kpi-v">${k.value}</span></div></div>`).join('');
+
+  stackedBars($('#trend'), DATA.days, ['layak', 'catat', 'tidak'], ['#16a34a', '#f59e0b', '#dc2626'], ['Layak', 'Layak - Catat', 'Tidak Layak']);
+
+  donut($('#donut'), [
+    { label: 'Layak', value: tot.layak, color: '#16a34a' },
+    { label: 'Layak - Catat', value: tot.catat, color: '#f59e0b' },
+    { label: 'Tidak Layak', value: tot.tidak, color: '#dc2626' }
+  ], pct(tot.layak, tot.cek) + '%');
+
+  barList($('#cats'), DATA.categories.map(c => ({ label: c.name, value: c.perhatian + c.rusak })));
+
+  const topItems = [...DATA.items].sort((a, b) => (b.perhatian + b.rusak) - (a.perhatian + a.rusak)).slice(0, 10);
+  barList($('#topItems'), topItems.map(i => ({ label: i.name + ' (' + i.cat + ')', value: i.perhatian + i.rusak })));
+
+  function renderTable() {
+    const q = $('#q').value.trim().toLowerCase();
+    const f = $('#fStatus').value;
+    const rows = V.filter(v =>
+      (!q || (v.plate + ' ' + v.driver + ' ' + v.model).toLowerCase().includes(q)) &&
+      (!f || (f === 'OK' ? v.odoStatus === 'OK' : v.odoStatus !== 'OK')));
+    $('#vt').innerHTML = rows.map(v => {
+      const p = v.cek ? v.layak / v.cek * 100 : 0;
+      return `<tr>
+        <td>${v.no}</td><td>${esc(v.model)}</td><td><b>${esc(v.plate)}</b></td><td>${esc(v.driver)}</td>
+        <td class="num">${v.cek}</td><td class="num">${v.layak}</td><td class="num">${v.catat}</td>
+        <td class="num">${v.tidak ? '<span class="badge b-bad">' + v.tidak + '</span>' : '0'}</td>
+        <td class="num">${p.toFixed(1)}%</td>
+        <td class="num">${v.odo ? fmt(v.odo) : '-'}</td>
+        <td>${v.odoStatus === 'OK' ? '<span class="badge b-ok">OK</span>' : '<span class="badge b-warn">' + esc(v.odoStatus) + '</span>'}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="11" class="note">Tidak ada data yang cocok.</td></tr>';
+    $('#vcount').textContent = 'Menampilkan ' + rows.length + ' dari ' + V.length + ' kendaraan.';
+  }
+  $('#q').addEventListener('input', renderTable);
+  $('#fStatus').addEventListener('change', renderTable);
+  renderTable();
+
+})(document.getElementById('view-kendaraan'), {"period":"Oktober 2026 (1–30 Okt)","workdays":22,"vehicles":[{"no":1,"model":"Minibus","plate":"B 1100 KLM","driver":"Dimas Saputra","cek":22,"layak":20,"catat":2,"tidak":0,"odo":109188,"odoStatus":"OK"},{"no":2,"model":"Pickup","plate":"B 1137 PNS","driver":"Rina Wulandari","cek":22,"layak":21,"catat":1,"tidak":0,"odo":0,"odoStatus":"Odometer kosong"},{"no":3,"model":"MPV","plate":"B 1174 RTV","driver":"Agus Permana","cek":22,"layak":21,"catat":1,"tidak":0,"odo":93853,"odoStatus":"OK"},{"no":4,"model":"Minibus","plate":"B 1211 SBG","driver":"Yoga Pratama","cek":22,"layak":22,"catat":0,"tidak":0,"odo":149658,"odoStatus":"OK"},{"no":5,"model":"Pickup","plate":"B 1248 KLM","driver":"Hendra Gunawan","cek":22,"layak":22,"catat":0,"tidak":0,"odo":114107,"odoStatus":"OK"},{"no":6,"model":"MPV","plate":"B 1285 PNS","driver":"Dewi Lestari","cek":22,"layak":21,"catat":1,"tidak":0,"odo":93553,"odoStatus":"OK"},{"no":7,"model":"Minibus","plate":"B 1322 RTV","driver":"Fajar Nugroho","cek":22,"layak":21,"catat":1,"tidak":0,"odo":148565,"odoStatus":"Update lebih dari 2 hari"},{"no":8,"model":"Pickup","plate":"B 1359 SBG","driver":"Taufik Hidayat","cek":22,"layak":21,"catat":1,"tidak":0,"odo":105517,"odoStatus":"OK"},{"no":9,"model":"MPV","plate":"B 1396 KLM","driver":"Maya Anggraini","cek":22,"layak":21,"catat":1,"tidak":0,"odo":139536,"odoStatus":"OK"},{"no":10,"model":"Minibus","plate":"B 1433 PNS","driver":"Rizky Ramadhan","cek":22,"layak":22,"catat":0,"tidak":0,"odo":121499,"odoStatus":"OK"},{"no":11,"model":"Pickup","plate":"B 1470 RTV","driver":"Bayu Setiawan","cek":22,"layak":21,"catat":1,"tidak":0,"odo":101058,"odoStatus":"OK"},{"no":12,"model":"MPV","plate":"B 1507 SBG","driver":"Nadia Putri","cek":22,"layak":22,"catat":0,"tidak":0,"odo":111041,"odoStatus":"OK"},{"no":13,"model":"Minibus","plate":"B 1544 KLM","driver":"Irfan Maulana","cek":22,"layak":21,"catat":1,"tidak":0,"odo":91240,"odoStatus":"OK"},{"no":14,"model":"Pickup","plate":"B 1581 PNS","driver":"Lina Marlina","cek":22,"layak":21,"catat":1,"tidak":0,"odo":96248,"odoStatus":"OK"},{"no":15,"model":"MPV","plate":"B 1618 RTV","driver":"Eko Prasetyo","cek":22,"layak":20,"catat":2,"tidak":0,"odo":121291,"odoStatus":"OK"},{"no":16,"model":"Minibus","plate":"B 1655 SBG","driver":"Sari Indah","cek":22,"layak":21,"catat":1,"tidak":0,"odo":108478,"odoStatus":"OK"}],"days":[{"label":"01","layak":14,"catat":2,"tidak":0},{"label":"02","layak":16,"catat":0,"tidak":0},{"label":"05","layak":16,"catat":0,"tidak":0},{"label":"06","layak":16,"catat":0,"tidak":0},{"label":"07","layak":15,"catat":1,"tidak":0},{"label":"08","layak":13,"catat":3,"tidak":0},{"label":"09","layak":15,"catat":1,"tidak":0},{"label":"12","layak":16,"catat":0,"tidak":0},{"label":"13","layak":16,"catat":0,"tidak":0},{"label":"14","layak":15,"catat":1,"tidak":0},{"label":"15","layak":16,"catat":0,"tidak":0},{"label":"16","layak":15,"catat":1,"tidak":0},{"label":"19","layak":16,"catat":0,"tidak":0},{"label":"20","layak":16,"catat":0,"tidak":0},{"label":"21","layak":16,"catat":0,"tidak":0},{"label":"22","layak":16,"catat":0,"tidak":0},{"label":"23","layak":16,"catat":0,"tidak":0},{"label":"26","layak":16,"catat":0,"tidak":0},{"label":"27","layak":15,"catat":1,"tidak":0},{"label":"28","layak":15,"catat":1,"tidak":0},{"label":"29","layak":14,"catat":2,"tidak":0},{"label":"30","layak":15,"catat":1,"tidak":0}],"categories":[{"name":"Dokumen","items":4,"perhatian":5,"rusak":0},{"name":"Mesin & Cairan","items":7,"perhatian":4,"rusak":0},{"name":"Kelistrikan & Lampu","items":6,"perhatian":3,"rusak":0},{"name":"Roda & Pengereman","items":4,"perhatian":2,"rusak":0},{"name":"Body & Kabin","items":5,"perhatian":3,"rusak":0},{"name":"Keselamatan","items":4,"perhatian":2,"rusak":0},{"name":"Keamanan","items":2,"perhatian":1,"rusak":0}],"items":[{"name":"STNK","cat":"Dokumen","perhatian":2,"rusak":0},{"name":"SIM Pengemudi","cat":"Dokumen","perhatian":1,"rusak":0},{"name":"Pajak Kendaraan","cat":"Dokumen","perhatian":2,"rusak":0},{"name":"Buku Servis/Log","cat":"Dokumen","perhatian":0,"rusak":0},{"name":"Level BBM","cat":"Mesin & Cairan","perhatian":0,"rusak":0},{"name":"Oli Mesin","cat":"Mesin & Cairan","perhatian":3,"rusak":0},{"name":"Air Radiator","cat":"Mesin & Cairan","perhatian":0,"rusak":0},{"name":"Minyak Rem","cat":"Mesin & Cairan","perhatian":0,"rusak":0},{"name":"Air Wiper","cat":"Mesin & Cairan","perhatian":0,"rusak":0},{"name":"Kebocoran Cairan","cat":"Mesin & Cairan","perhatian":0,"rusak":0},{"name":"Suara & Getaran","cat":"Mesin & Cairan","perhatian":1,"rusak":0},{"name":"Lampu Utama","cat":"Kelistrikan & Lampu","perhatian":1,"rusak":0},{"name":"Lampu Rem","cat":"Kelistrikan & Lampu","perhatian":0,"rusak":0},{"name":"Lampu Sein & Hazard","cat":"Kelistrikan & Lampu","perhatian":1,"rusak":0},{"name":"Aki","cat":"Kelistrikan & Lampu","perhatian":0,"rusak":0},{"name":"Klakson","cat":"Kelistrikan & Lampu","perhatian":1,"rusak":0},{"name":"Wiper","cat":"Kelistrikan & Lampu","perhatian":0,"rusak":0},{"name":"Ban (Kondisi & Tekanan)","cat":"Roda & Pengereman","perhatian":0,"rusak":0},{"name":"Ban Cadangan","cat":"Roda & Pengereman","perhatian":1,"rusak":0},{"name":"Rem Kaki","cat":"Roda & Pengereman","perhatian":1,"rusak":0},{"name":"Rem Tangan","cat":"Roda & Pengereman","perhatian":0,"rusak":0},{"name":"Kaca & Spion","cat":"Body & Kabin","perhatian":0,"rusak":0},{"name":"Penyok/Lecet","cat":"Body & Kabin","perhatian":2,"rusak":0},{"name":"Sabuk Pengaman","cat":"Body & Kabin","perhatian":1,"rusak":0},{"name":"AC","cat":"Body & Kabin","perhatian":0,"rusak":0},{"name":"Kebersihan","cat":"Body & Kabin","perhatian":0,"rusak":0},{"name":"APAR","cat":"Keselamatan","perhatian":1,"rusak":0},{"name":"Kotak P3K","cat":"Keselamatan","perhatian":0,"rusak":0},{"name":"Segitiga Pengaman","cat":"Keselamatan","perhatian":0,"rusak":0},{"name":"Dongkrak & Kunci Roda","cat":"Keselamatan","perhatian":1,"rusak":0},{"name":"GPS Tracker","cat":"Keamanan","perhatian":1,"rusak":0},{"name":"Panic Button","cat":"Keamanan","perhatian":0,"rusak":0}]});
+
+// building
+(function (root, DATA) {
+  const $ = s => root.querySelector(s);
+
+  $('#period').textContent = DATA.period + ' · ' + DATA.cabang + ' · ' + DATA.workdays + ' bulan · ' + DATA.areas.length + ' area';
+
+  const D = DATA.days;
+  const aman = D.reduce((s, d) => s + d.aman, 0);
+  const catat = D.reduce((s, d) => s + d.catat, 0);
+  const tidak = D.reduce((s, d) => s + d.tidak, 0);
+  const sesi = D.length;
+  const avgNa = Math.round(D.reduce((s, d) => s + d.tidakAda, 0) / sesi);
+
+  $('#kpis').innerHTML = [
+    { label: 'Total Pengecekan Bulanan', value: fmt(sesi), sub: DATA.workdays + ' bulan', cls: 'hero' },
+    { label: '% Aman', value: pct(aman, sesi) + '%', sub: fmt(aman) + ' bulan tanpa temuan' },
+    { label: 'Aman - Catat', value: fmt(catat), sub: pct(catat, sesi) + '% bulan ada catatan' },
+    { label: 'Tidak Aman', value: fmt(tidak), sub: pct(tidak, sesi) + '% perlu tindak lanjut' },
+    { label: 'Rata-rata Item Tidak Ada', value: fmt(avgNa), sub: 'item N/A per pengecekan' }
+  ].map(k => `<div class="kpi-frame"><div class="kpi-head">${k.label}</div><div class="kpi-body"><span class="kpi-sub">${k.sub}</span><span class="kpi-v">${k.value}</span></div></div>`).join('');
+
+  stackedBars($('#trend'), D, ['aman', 'catat', 'tidak'], ['#16a34a', '#f59e0b', '#dc2626'], ['Aman', 'Aman - Catat', 'Tidak Aman']);
+
+  donut($('#donut'), [
+    { label: 'Aman', value: aman, color: '#16a34a' },
+    { label: 'Aman - Catat', value: catat, color: '#f59e0b' },
+    { label: 'Tidak Aman', value: tidak, color: '#dc2626' }
+  ], pct(aman, sesi) + '%');
+
+  barList($('#cats'), DATA.categories.map(c => ({ label: c.name, value: c.perhatian + c.rusak })));
+
+  const topItems = [...DATA.items].sort((a, b) => (b.perhatian + b.rusak) - (a.perhatian + a.rusak)).slice(0, 10);
+  barList($('#topItems'), topItems.map(i => ({ label: i.name + ' · ' + i.area, value: i.perhatian + i.rusak })));
+
+  function renderAreas() {
+    const q = $('#q').value.trim().toLowerCase();
+    const rows = DATA.areas.filter(a => !q || (a.name + ' ' + a.code).toLowerCase().includes(q));
+    $('#at').innerHTML = rows.map(a => `<tr>
+        <td>${a.no}</td><td>${esc(a.name)}</td><td><code>${esc(a.code)}</code></td><td class="num">${a.items}</td>
+        <td class="num">${a.ok}</td><td class="num">${a.perhatian}</td>
+        <td class="num">${a.rusak ? '<span class="badge b-bad">' + a.rusak + '</span>' : 0}</td>
+        <td class="num">${a.tidakAda}</td><td class="num">${a.total}</td>
+        <td>${badgeFor(a.status)}</td></tr>`).join('') || '<tr><td colspan="10" class="note">Tidak ada area yang cocok.</td></tr>';
+    $('#acount').textContent = 'Menampilkan ' + rows.length + ' dari ' + DATA.areas.length + ' area.';
+  }
+  $('#q').addEventListener('input', renderAreas);
+  renderAreas();
+
+  $('#pt').innerHTML = DATA.petugas.map(p => {
+    const n = p.aman + p.catat + p.tidak;
+    return `<tr><td>${esc(p.name)}</td><td class="num">${n}</td><td class="num">${p.aman}</td><td class="num">${p.catat}</td>
+      <td class="num">${p.tidak ? '<span class="badge b-bad">' + p.tidak + '</span>' : 0}</td><td class="num">${pct(p.aman, n)}%</td></tr>`;
+  }).join('');
+
+})(document.getElementById('view-building'), {"period":"Januari–Oktober 2026 (pengecekan bulanan)","cabang":"CPC Cabang Contoh","workdays":10,"days":[{"label":"Jan","aman":0,"catat":1,"tidak":0,"tidakAda":6},{"label":"Feb","aman":0,"catat":1,"tidak":0,"tidakAda":6},{"label":"Mar","aman":1,"catat":0,"tidak":0,"tidakAda":6},{"label":"Apr","aman":1,"catat":0,"tidak":0,"tidakAda":6},{"label":"Mei","aman":1,"catat":0,"tidak":0,"tidakAda":6},{"label":"Jun","aman":1,"catat":0,"tidak":0,"tidakAda":6},{"label":"Jul","aman":1,"catat":0,"tidak":0,"tidakAda":6},{"label":"Agu","aman":1,"catat":0,"tidak":0,"tidakAda":6},{"label":"Sep","aman":1,"catat":0,"tidak":0,"tidakAda":6},{"label":"Okt","aman":1,"catat":0,"tidak":0,"tidakAda":6}],"areas":[{"no":1,"name":"Koridor Utama Kantor","code":"AREA-01","items":6,"ok":50,"perhatian":0,"rusak":0,"tidakAda":10,"total":0,"status":"Aman"},{"no":2,"name":"Ruang Kerja Office","code":"AREA-02","items":4,"ok":40,"perhatian":0,"rusak":0,"tidakAda":0,"total":0,"status":"Aman"},{"no":3,"name":"Ruang Meeting & Tunggu Klien","code":"AREA-03","items":3,"ok":30,"perhatian":0,"rusak":0,"tidakAda":0,"total":0,"status":"Aman"},{"no":4,"name":"Ruang Manager","code":"AREA-04","items":3,"ok":30,"perhatian":0,"rusak":0,"tidakAda":0,"total":0,"status":"Aman"},{"no":5,"name":"Ruang Searching Proses","code":"AREA-05","items":7,"ok":60,"perhatian":0,"rusak":0,"tidakAda":10,"total":0,"status":"Aman"},{"no":6,"name":"Area Depan Khazanah","code":"AREA-06","items":7,"ok":58,"perhatian":2,"rusak":0,"tidakAda":10,"total":2,"status":"Perhatian"},{"no":7,"name":"Ruang Khazanah","code":"AREA-07","items":6,"ok":50,"perhatian":0,"rusak":0,"tidakAda":10,"total":0,"status":"Aman"},{"no":8,"name":"Area Transaksi","code":"AREA-08","items":7,"ok":60,"perhatian":0,"rusak":0,"tidakAda":10,"total":0,"status":"Aman"},{"no":9,"name":"Area Tunggu Bagian Masuk & Keluar","code":"AREA-09","items":4,"ok":40,"perhatian":0,"rusak":0,"tidakAda":0,"total":0,"status":"Aman"},{"no":10,"name":"Area Proses Penghitungan","code":"AREA-10","items":6,"ok":50,"perhatian":0,"rusak":0,"tidakAda":10,"total":0,"status":"Aman"}],"categories":[{"name":"Pencahayaan Darurat","items":6,"perhatian":1,"rusak":0},{"name":"Proteksi Kebakaran","items":23,"perhatian":1,"rusak":0},{"name":"Alarm Keamanan","items":7,"perhatian":0,"rusak":0},{"name":"Pengawasan (CCTV)","items":9,"perhatian":0,"rusak":0},{"name":"Akses & Pintu","items":8,"perhatian":0,"rusak":0}],"items":[{"name":"Emergency Light","cat":"Pencahayaan Darurat","area":"Koridor Utama Kantor","perhatian":0,"rusak":0},{"name":"Smoke Detector","cat":"Proteksi Kebakaran","area":"Koridor Utama Kantor","perhatian":0,"rusak":0},{"name":"APAR","cat":"Proteksi Kebakaran","area":"Koridor Utama Kantor","perhatian":0,"rusak":0},{"name":"CCTV Camera","cat":"Pengawasan (CCTV)","area":"Koridor Utama Kantor","perhatian":0,"rusak":0},{"name":"Panic Button","cat":"Alarm Keamanan","area":"Koridor Utama Kantor","perhatian":0,"rusak":0},{"name":"Fire Alarm","cat":"Proteksi Kebakaran","area":"Koridor Utama Kantor","perhatian":0,"rusak":0},{"name":"Smoke Detector","cat":"Proteksi Kebakaran","area":"Ruang Kerja Office","perhatian":0,"rusak":0},{"name":"APAR","cat":"Proteksi Kebakaran","area":"Ruang Kerja Office","perhatian":0,"rusak":0},{"name":"CCTV Camera","cat":"Pengawasan (CCTV)","area":"Ruang Kerja Office","perhatian":0,"rusak":0},{"name":"Panic Button","cat":"Alarm Keamanan","area":"Ruang Kerja Office","perhatian":0,"rusak":0},{"name":"APAR","cat":"Proteksi Kebakaran","area":"Ruang Meeting & Tunggu Klien","perhatian":0,"rusak":0},{"name":"CCTV Camera","cat":"Pengawasan (CCTV)","area":"Ruang Meeting & Tunggu Klien","perhatian":0,"rusak":0},{"name":"Panic Button","cat":"Alarm Keamanan","area":"Ruang Meeting & Tunggu Klien","perhatian":0,"rusak":0},{"name":"CCTV Camera","cat":"Pengawasan (CCTV)","area":"Ruang Manager","perhatian":0,"rusak":0},{"name":"Panic Button","cat":"Alarm Keamanan","area":"Ruang Manager","perhatian":0,"rusak":0},{"name":"Fire Alarm","cat":"Proteksi Kebakaran","area":"Ruang Manager","perhatian":0,"rusak":0},{"name":"Panic Button","cat":"Alarm Keamanan","area":"Ruang Searching Proses","perhatian":0,"rusak":0},{"name":"Fire Alarm","cat":"Proteksi Kebakaran","area":"Ruang Searching Proses","perhatian":0,"rusak":0},{"name":"Door Interlock","cat":"Akses & Pintu","area":"Ruang Searching Proses","perhatian":0,"rusak":0},{"name":"Emergency Door Release","cat":"Akses & Pintu","area":"Ruang Searching Proses","perhatian":0,"rusak":0},{"name":"Emergency Light","cat":"Pencahayaan Darurat","area":"Ruang Searching Proses","perhatian":0,"rusak":0},{"name":"Smoke Detector","cat":"Proteksi Kebakaran","area":"Ruang Searching Proses","perhatian":0,"rusak":0},{"name":"APAR","cat":"Proteksi Kebakaran","area":"Ruang Searching Proses","perhatian":0,"rusak":0},{"name":"Fire Alarm","cat":"Proteksi Kebakaran","area":"Area Depan Khazanah","perhatian":0,"rusak":0},{"name":"Door Interlock","cat":"Akses & Pintu","area":"Area Depan Khazanah","perhatian":0,"rusak":0},{"name":"Emergency Door Release","cat":"Akses & Pintu","area":"Area Depan Khazanah","perhatian":0,"rusak":0},{"name":"Emergency Light","cat":"Pencahayaan Darurat","area":"Area Depan Khazanah","perhatian":1,"rusak":0},{"name":"Smoke Detector","cat":"Proteksi Kebakaran","area":"Area Depan Khazanah","perhatian":1,"rusak":0},{"name":"APAR","cat":"Proteksi Kebakaran","area":"Area Depan Khazanah","perhatian":0,"rusak":0},{"name":"CCTV Camera","cat":"Pengawasan (CCTV)","area":"Area Depan Khazanah","perhatian":0,"rusak":0},{"name":"Door Interlock","cat":"Akses & Pintu","area":"Ruang Khazanah","perhatian":0,"rusak":0},{"name":"Emergency Door Release","cat":"Akses & Pintu","area":"Ruang Khazanah","perhatian":0,"rusak":0},{"name":"Emergency Light","cat":"Pencahayaan Darurat","area":"Ruang Khazanah","perhatian":0,"rusak":0},{"name":"Smoke Detector","cat":"Proteksi Kebakaran","area":"Ruang Khazanah","perhatian":0,"rusak":0},{"name":"APAR","cat":"Proteksi Kebakaran","area":"Ruang Khazanah","perhatian":0,"rusak":0},{"name":"CCTV Camera","cat":"Pengawasan (CCTV)","area":"Ruang Khazanah","perhatian":0,"rusak":0},{"name":"Emergency Door Release","cat":"Akses & Pintu","area":"Area Transaksi","perhatian":0,"rusak":0},{"name":"Emergency Light","cat":"Pencahayaan Darurat","area":"Area Transaksi","perhatian":0,"rusak":0},{"name":"Smoke Detector","cat":"Proteksi Kebakaran","area":"Area Transaksi","perhatian":0,"rusak":0},{"name":"APAR","cat":"Proteksi Kebakaran","area":"Area Transaksi","perhatian":0,"rusak":0},{"name":"CCTV Camera","cat":"Pengawasan (CCTV)","area":"Area Transaksi","perhatian":0,"rusak":0},{"name":"Panic Button","cat":"Alarm Keamanan","area":"Area Transaksi","perhatian":0,"rusak":0},{"name":"Fire Alarm","cat":"Proteksi Kebakaran","area":"Area Transaksi","perhatian":0,"rusak":0},{"name":"Emergency Light","cat":"Pencahayaan Darurat","area":"Area Tunggu Bagian Masuk & Keluar","perhatian":0,"rusak":0},{"name":"Smoke Detector","cat":"Proteksi Kebakaran","area":"Area Tunggu Bagian Masuk & Keluar","perhatian":0,"rusak":0},{"name":"APAR","cat":"Proteksi Kebakaran","area":"Area Tunggu Bagian Masuk & Keluar","perhatian":0,"rusak":0},{"name":"CCTV Camera","cat":"Pengawasan (CCTV)","area":"Area Tunggu Bagian Masuk & Keluar","perhatian":0,"rusak":0},{"name":"Smoke Detector","cat":"Proteksi Kebakaran","area":"Area Proses Penghitungan","perhatian":0,"rusak":0},{"name":"APAR","cat":"Proteksi Kebakaran","area":"Area Proses Penghitungan","perhatian":0,"rusak":0},{"name":"CCTV Camera","cat":"Pengawasan (CCTV)","area":"Area Proses Penghitungan","perhatian":0,"rusak":0},{"name":"Panic Button","cat":"Alarm Keamanan","area":"Area Proses Penghitungan","perhatian":0,"rusak":0},{"name":"Fire Alarm","cat":"Proteksi Kebakaran","area":"Area Proses Penghitungan","perhatian":0,"rusak":0},{"name":"Door Interlock","cat":"Akses & Pintu","area":"Area Proses Penghitungan","perhatian":0,"rusak":0}],"petugas":[{"name":"Petugas 01","aman":3,"catat":1,"tidak":0},{"name":"Petugas 02","aman":2,"catat":1,"tidak":0},{"name":"Petugas 03","aman":3,"catat":0,"tidak":0}]});
+
+// pjpur
+(function (root, DATA) {
+  const $ = s => root.querySelector(s);
+
+  $('#period').textContent = DATA.period + ' · ' + DATA.cabang + ' · Kepala CPC: ' + DATA.kepala;
+  $('#nPoin').textContent = DATA.totalPoin;
+
+  const days = DATA.days; // [{d, wd, weekend}]
+  const work = days.filter(d => !d.weekend);
+  const pts = DATA.stages.flatMap(st => st.points);
+  const aman = pts.reduce((s, p) => s + p.daily.filter(x => x === '√').length, 0);
+  const temuan = pts.reduce((s, p) => s + p.daily.filter(x => x === 'X').length, 0);
+  const totalKontrol = aman + temuan;
+  const compliance = pct(aman, totalKontrol);
+  const ptPct = p => { const a = p.daily.filter(x => x === '√').length, t = p.daily.filter(x => x === 'X').length; return a + t ? a / (a + t) * 100 : 0; };
+  const catPct = st => { const a = st.points.reduce((s, p) => s + p.daily.filter(x => x === '√').length, 0), t = st.points.reduce((s, p) => s + p.daily.filter(x => x === 'X').length, 0); return a + t ? a / (a + t) * 100 : 0; };
+
+  $('#kpis').innerHTML = [
+    { label: 'Total Kontrol (√ + X)', value: fmt(totalKontrol), sub: work.length + ' hari × ' + DATA.totalPoin + ' titik' },
+    { label: 'Kontrol Terkendali (√)', value: fmt(aman), sub: 'terpenuhi sesuai SOP' },
+    { label: 'Temuan Risiko (X)', value: fmt(temuan), sub: temuan ? 'lihat log temuan' : 'nihil bulan ini' },
+    { label: 'Tingkat Kepatuhan', value: compliance + '%', sub: 'Target minimal ' + DATA.target + '%' }
+  ].map(k => `<div class="kpi-frame"><div class="kpi-head">${k.label}</div><div class="kpi-body"><span class="kpi-sub">${k.sub}</span><span class="kpi-v">${k.value}</span></div></div>`).join('');
+
+  const trend = work.map(d => {
+    let a = 0, t = 0;
+    pts.forEach(p => { const v = p.daily[d.d - 1]; if (v === '√') a++; else if (v === 'X') t++; });
+    return { label: String(d.d).padStart(2, '0'), aman: a, temuan: t };
+  });
+  stackedBars($('#trend'), trend, ['aman', 'temuan'], ['#16a34a', '#f43f5e'], ['Kontrol Aman', 'Temuan']);
+
+  $('#catCards').innerHTML = DATA.stages.map(st =>
+    `<div class="card cat-card"><h3>${esc(st.name)}</h3><p class="note" style="margin:-4px 0 6px">${esc(st.sub)}</p>` +
+    st.points.map(p => `<div class="cat-row"><span title="${esc(p.name)}">${p.no}. ${esc(p.name)}</span><b>${ptPct(p).toFixed(1)}%</b></div>`).join('') +
+    `<div class="cat-total"><small>Total kategori</small><div class="cat-pct">${catPct(st).toFixed(1)}%</div></div></div>`
+  ).join('') + (DATA.distribusi ? `<div class="card cat-card"><h3>${esc(DATA.distribusi.name)}</h3><p class="note" style="margin:-4px 0 6px">${esc(DATA.distribusi.sub)}</p>` +
+    DATA.distribusi.rows.map(r => `<div class="cat-row"><span>${esc(r.name)}</span><b>${r.pct.toFixed(1)}%</b></div>`).join('') +
+    `<div class="cat-total"><small>Total kategori</small><div class="cat-pct">${DATA.distribusi.total.toFixed(1)}%</div></div></div>` : '');
+
+  donut($('#donut'), [
+    { label: 'Aman (√)', value: aman, color: '#16a34a' },
+    { label: 'Temuan (X)', value: temuan, color: '#f43f5e' }
+  ], compliance + '%');
+
+  let h = '<thead><tr><th style="text-align:left;position:sticky;left:0;background:var(--card)">Titik Kontrol</th>';
+  days.forEach(d => { h += `<th style="text-align:center;min-width:24px">${d.d}<div style="font-size:9px;font-weight:500">${d.wd}</div></th>`; });
+  h += '</tr></thead><tbody>';
+  DATA.stages.forEach(st => {
+    h += `<tr><td colspan="${days.length + 1}" style="padding:6px 8px;font-size:12px;font-weight:700;background:var(--choco);color:var(--lighter)">${esc(st.name)} · ${esc(st.sub)}</td></tr>`;
+    st.points.forEach(p => {
+      h += `<tr><td class="hname sticky-l" style="padding-left:14px!important" title="${esc(p.name)}">${p.no}. ${esc(p.name)}</td>`;
+      p.daily.forEach((v, i) => {
+        const cls = v === '√' ? 'v' : v === 'X' ? 'x' : 'd';
+        h += `<td><div class="hc ${cls}" title="${esc(p.name)} · ${i + 1}">${v}</div></td>`;
+      });
+      h += '</tr>';
+    });
+  });
+  h += '</tbody>';
+  $('#heatTbl').innerHTML = h;
+
+  $('#logBody').innerHTML = DATA.logs.map(l => `<tr>
+      <td>${l.no}</td><td>${esc(l.tgl)}</td><td>${esc(l.ref)}</td><td>${esc(l.tahap)}</td>
+      <td style="white-space:normal;min-width:240px">${esc(l.deskripsi)}</td>
+      <td style="white-space:normal;min-width:240px">${esc(l.tindakan)}</td>
+      <td><code>${esc(l.ba)}</code></td><td>${badgeFor(l.status)}</td></tr>`).join('')
+    || '<tr><td colspan="8" class="note">Tidak ada temuan bulan ini.</td></tr>';
+  $('#logNote').textContent = 'Total ' + DATA.logs.length + ' temuan tercatat, seluruhnya berstatus Closed';
+
+})(document.getElementById('view-pjpur'), {"period":"Oktober 2026 (1–31 Okt)","cabang":"CPC Cabang Contoh","kepala":"Bayu Kusuma","target":97.5,"totalPoin":13,"days":[{"d":1,"wd":"Kam","weekend":false},{"d":2,"wd":"Jum","weekend":false},{"d":3,"wd":"Sab","weekend":true},{"d":4,"wd":"Min","weekend":true},{"d":5,"wd":"Sen","weekend":false},{"d":6,"wd":"Sel","weekend":false},{"d":7,"wd":"Rab","weekend":false},{"d":8,"wd":"Kam","weekend":false},{"d":9,"wd":"Jum","weekend":false},{"d":10,"wd":"Sab","weekend":true},{"d":11,"wd":"Min","weekend":true},{"d":12,"wd":"Sen","weekend":false},{"d":13,"wd":"Sel","weekend":false},{"d":14,"wd":"Rab","weekend":false},{"d":15,"wd":"Kam","weekend":false},{"d":16,"wd":"Jum","weekend":false},{"d":17,"wd":"Sab","weekend":true},{"d":18,"wd":"Min","weekend":true},{"d":19,"wd":"Sen","weekend":false},{"d":20,"wd":"Sel","weekend":false},{"d":21,"wd":"Rab","weekend":false},{"d":22,"wd":"Kam","weekend":false},{"d":23,"wd":"Jum","weekend":false},{"d":24,"wd":"Sab","weekend":true},{"d":25,"wd":"Min","weekend":true},{"d":26,"wd":"Sen","weekend":false},{"d":27,"wd":"Sel","weekend":false},{"d":28,"wd":"Rab","weekend":false},{"d":29,"wd":"Kam","weekend":false},{"d":30,"wd":"Jum","weekend":false},{"d":31,"wd":"Sab","weekend":true}],"stages":[{"code":"1","name":"1. Pemrosesan","sub":"Penerimaan, Sortasi & Pengemasan Uang Tunai","points":[{"no":1,"name":"Segel rusak atau nomor seri seal tidak sesuai","daily":["√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]},{"no":2,"name":"Serah terima di luar jangkauan kamera / blind spot","daily":["√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]},{"no":3,"name":"Lolosnya uang palsu (Upal) / uang diragukan","daily":["√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]},{"no":4,"name":"Kesalahan pemilahan ULE dan UTLE","daily":["√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]},{"no":5,"name":"Tercampurnya uang antar klien / selisih hitung","daily":["√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]},{"no":6,"name":"Kesalahan lembar dalam ban (100) / pak (1.000)","daily":["√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]}]},{"code":"2","name":"2. Penyimpanan","sub":"Pengelolaan Ruang Khazanah, Akses & Keamanan","points":[{"no":7,"name":"Penguasaan aset sepihak / akses tunggal khazanah","daily":["√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]},{"no":8,"name":"Penyusupan / pengeluaran uang tanpa pemeriksaan fisik","daily":["√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]},{"no":9,"name":"Selisih saldo fisik kas vs pembukuan akhir hari","daily":["√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]},{"no":10,"name":"Tercampurnya zona penyimpanan atau salah ambil rute","daily":["√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]},{"no":11,"name":"Kerusakan fisik uang akibat kelembapan, hama, atau kebakaran","daily":["√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]},{"no":12,"name":"Penyembunyian uang di pakaian / barang pribadi","daily":["√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]},{"no":13,"name":"Kegagalan pemantauan CCTV atau hilangnya rekaman","daily":["√","√","-","-","√","√","√","√","√","-","-","√","X","√","√","√","-","-","√","√","√","√","√","-","-","√","√","√","√","√","-"]}]}],"logs":[{"no":1,"tgl":"13 Okt 2026","ref":"RSK-13","tahap":"2. Penyimpanan","deskripsi":"Kamera CCTV meja sortir blank selama 15 menit akibat gangguan jaringan.","tindakan":"Aktivitas meja sortir ditangguhkan sementara, tim IT mengganti port switch dan memverifikasi rekaman.","ba":"BA-SEC/X/014","status":"Closed"}],"distribusi":{"name":"Distribusi","sub":"Checklist Rutin Kendaraan Operasional","rows":[{"name":"Dokumen","pct":99.64488636363636},{"name":"Mesin & Cairan","pct":99.83766233766234},{"name":"Kelistrikan & Lampu","pct":99.85795454545455},{"name":"Roda & Pengereman","pct":99.85795454545455},{"name":"Body & Kabin","pct":99.82954545454545},{"name":"Keselamatan","pct":99.85795454545455},{"name":"Keamanan","pct":99.85795454545455}],"total":99.82244318181817}});
+</script>
+<script>
+(function () {
+  const mb = document.getElementById("menuBtn"); if (mb) mb.addEventListener("click", () => document.body.classList.toggle("menu-open"));
+  const views = [...document.querySelectorAll('.view')];
+  const sws = [...document.querySelectorAll('.sidebar .sw')];
+  views.forEach(v => {
+    const key = v.dataset.view;
+    const sub = document.querySelector('.subnav[data-sub="' + key + '"]');
+    v.querySelectorAll('.section-title').forEach((el, i) => {
+      const a = document.createElement('a');
+      a.setAttribute('role', 'button');
+      a.textContent = el.textContent.trim().replace(/\s*\(.*\)$/, '');
+      a.addEventListener('click', e => { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+      sub.appendChild(a);
+    });
+  });
+  function show(key) {
+    views.forEach(v => v.classList.toggle('active', v.dataset.view === key));
+    sws.forEach(s => s.classList.toggle('active', s.dataset.view === key));
+    document.querySelectorAll('.subnav').forEach(s => s.classList.toggle('active', s.dataset.sub === key));
+    window.scrollTo(0, 0);
+    document.body.classList.remove('menu-open');
+  }
+  sws.forEach(s => s.addEventListener('click', e => { e.preventDefault(); show(s.dataset.view); }));
+})();
+</script>
+</body>
+</html>
